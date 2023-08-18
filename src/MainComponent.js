@@ -8,20 +8,22 @@ function MainComponent() {
   const startX = useRef(null);
   const startY = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  // eslint-disable-next-line
   const [actualImageDimensions, setActualImageDimensions] = useState({
     width: 0,
     height: 0,
   });
+  // eslint-disable-next-line
   const [renderedDimensions, setRenderedDimensions] = useState({
     width: 0,
     height: 0,
   });
 
-  const [actualCoordinates, setActualCoordinates] = useState([]);
+  // const [actualCoordinates, setActualCoordinates] = useState([]);
   const [boxProp, setBoxProp] = useState({});
   const [boxProps, setBoxProps] = useState([]);
-  const [coordinates, setCoordinates] = useState([]);
-  const [transformedCoordinates, setTransformedCoordinates] = useState([]);
+  // const [coordinates, setCoordinates] = useState([]);
+  // const [transformedCoordinates, setTransformedCoordinates] = useState([]);
 
   // Function to find dimensions of rendered image
   const updateRenderedDimensions = () => {

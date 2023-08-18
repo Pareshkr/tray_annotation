@@ -1,8 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import MainComponent from "./MainComponent";
-import DrawRectangle from "./DrawRectangle";
-import ReactImageAnnotation from "./ReactImageAnnotation";
-import Functional from "./Functional";
+// import DrawRectangle from "./DrawRectangle";
 
 function App() {
   return (
