@@ -1,23 +1,20 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import MainComponent from "./MainComponent";
+import DrawRectangle from "./DrawRectangle";
+import ReactImageAnnotation from "./ReactImageAnnotation";
+import Functional from "./Functional";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <BrowserRouter>
+        <Routes basename="/">
+          <Route path="/" element={<MainComponent />} />
+          {/* <Route path="/" element={<DrawRectangle />} /> */}
+          {/* <Route path="/" element={<ReactImageAnnotation />} /> */}
+          {/* <Route path="/" element={<Functional />} /> */}
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }
