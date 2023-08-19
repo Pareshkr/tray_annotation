@@ -3,128 +3,132 @@ import DemoImage from "./assets/shelf_image.png";
 
 function MainComponent() {
   const imgDivRef = useRef(null);
-  const imgOffSetX = useRef(null);
-  const imgOffSetY = useRef(null);
-  const startX = useRef(null);
-  const startY = useRef(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  // eslint-disable-next-line
-  const [actualImageDimensions, setActualImageDimensions] = useState({
+  const [realDimension, setRealDimension] = useState({
     width: 0,
     height: 0,
   });
-  // eslint-disable-next-line
   const [renderedDimensions, setRenderedDimensions] = useState({
     width: 0,
     height: 0,
   });
-
-  // const [actualCoordinates, setActualCoordinates] = useState([]);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [imgOffset, setImgOffset] = useState({ x: 0, y: 0 });
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const [endPos, setEndPos] = useState({ x: 0, y: 0 });
   const [boxProp, setBoxProp] = useState({});
   const [boxProps, setBoxProps] = useState([]);
-  // const [coordinates, setCoordinates] = useState([]);
-  // const [transformedCoordinates, setTransformedCoordinates] = useState([]);
 
-  // Function to find dimensions of rendered image
-  const updateRenderedDimensions = () => {
-    const imgDiv = imgDivRef.current;
-    if (imgDiv) {
-      const { width, height, top, left } = imgDiv.getBoundingClientRect();
-      setRenderedDimensions({ width, height });
-      imgOffSetX.current = left;
-      imgOffSetY.current = top;
-    }
-  };
-  // console.log("TOP", imgOffSetX);
-  // console.log("LEFT", imgOffSetY);
+  const timer = useRef();
   useEffect(() => {
-    updateRenderedDimensions();
-    window.addEventListener("resize", updateRenderedDimensions);
     return () => {
-      window.removeEventListener("resize", updateRenderedDimensions);
+      clearTimeout(timer.current);
     };
   }, []);
 
-  //Function to find actual dimensions of the image
-  const findActualDimensions = (event) => {
+  //Find real, rendered dimensions & offset wrt VP of the image
+  const findDimensions = (event) => {
     const { naturalWidth, naturalHeight } = event.target;
-    setActualImageDimensions({ width: naturalWidth, height: naturalHeight });
-    updateRenderedDimensions();
+    const imgDiv = imgDivRef.current;
+    const { width, height, left, top } = imgDiv.getBoundingClientRect();
+    setRealDimension({ width: naturalWidth, height: naturalHeight });
+    setRenderedDimensions({ width: width, height: height });
+    setImgOffset({ x: left, y: top });
   };
 
-  const startDrawingRectangle = ({ nativeEvent }) => {
-    nativeEvent.preventDefault();
-    nativeEvent.stopPropagation();
-    startX.current = nativeEvent.clientX - imgOffSetX.current;
-    startY.current = nativeEvent.clientY - imgOffSetY.current;
+  // useEffect(() => {
+  //   if (realDimension.width !== 0) {
+  //     console.log("Real", realDimension);
+  //     console.log("Rendered", renderedDimensions);
+  //     console.log("Offset", imgOffset);
+  //   }
+  // }, [realDimension, renderedDimensions]);
 
+  const startDrawingRectangle = (event) => {
+    event.preventDefault();
     setIsDrawing(true);
-
-    setBoxProp((prev) => ({
-      ...prev,
-      top: startX.current,
-      left: startY.current,
-    }));
+    const x = event.clientX;
+    const y = event.clientY;
+    console.log("Start", x, y);
+    setStartPos({ x: x, y: y });
+    setEndPos({ x: x, y: y });
   };
 
-  const drawRectangle = ({ nativeEvent }) => {
+  const drawRectangle = (event) => {
+    event.preventDefault();
     if (!isDrawing) {
       return;
     }
 
-    nativeEvent.preventDefault();
-    nativeEvent.stopPropagation();
+    let x = event.clientX;
+    let y = event.clientY;
+    console.log("end", x, y);
 
-    const newMouseX = nativeEvent.clientX - imgOffSetX.current;
-    const newMouseY = nativeEvent.clientY - imgOffSetY.current;
+    if (isDrawing) {
+      setEndPos({ x, y });
+    }
 
-    const rectWidht = newMouseX - startX.current;
-    const rectHeight = newMouseY - startY.current;
-
-    setBoxProp((prev) => ({
-      ...prev,
-      width: rectWidht,
-      height: rectHeight,
-    }));
+    // setBoxProp((prev) => ({
+    //   ...prev,
+    //   width: rectWidht,
+    //   height: rectHeight,
+    // }));
   };
   const stopDrawingRectangle = () => {
     if (isDrawing) {
       setIsDrawing(false);
-      setBoxProps((prev) => [...prev, boxProp]);
+      const rect = {
+        left: Math.min(startPos.x, endPos.x),
+        top: Math.min(startPos.y, endPos.y),
+        width: Math.abs(endPos.x - startPos.x),
+        height: Math.abs(endPos.y - startPos.y),
+      };
+      setBoxProps((prevBoxProps) => [...prevBoxProps, rect]);
     }
   };
 
-  console.log("BOX OBJECT", boxProp);
+  // console.log("BOX OBJECT", boxProp);
   console.log("BOX ARRAY", boxProps);
 
   return (
-    <section className="w-full h-screen flex justify-center border border-black">
+    <section className="w-full h-screen flex justify-center bg-black border border-black">
       <div ref={imgDivRef} className="relative self-center border border-black">
         <img
-          onLoad={findActualDimensions}
+          onLoad={findDimensions}
           onMouseDown={startDrawingRectangle}
           onMouseMove={drawRectangle}
           onMouseUp={stopDrawingRectangle}
           onMouseLeave={stopDrawingRectangle}
           src={DemoImage}
           alt="demoImage"
-          className="max-h-[97vh] cursor-pointer"
+          className="max-h-[97vh]"
         />
         {boxProps.map((box, index) => (
           <div
             key={index}
-            className="border-2 border-[#10B981]"
+            className="absolute border-2 border-white"
             style={{
-              position: "absolute",
-              left: `${box.left}px`,
-              top: `${box.top}px`,
-              width: `${box.width}px`,
-              height: `${box.height}px`,
-              // backgroundColor: "#10B981",
-              // borderRadius: "50%",
+              left: box.left - imgOffset.x,
+              top: box.top - imgOffset.y,
+              width: box.width,
+              height: box.height,
             }}
-          ></div>
+          >
+            <span className="relative text-white -top-7 left-1">
+              {index + 1}
+            </span>
+          </div>
         ))}
+        {isDrawing && (
+          <div
+            className="absolute border-2 border-green-500"
+            style={{
+              left: Math.min(startPos.x, endPos.x),
+              top: Math.min(startPos.y, endPos.y),
+              width: Math.abs(endPos.x - startPos.x),
+              height: Math.abs(endPos.y - startPos.y),
+            }}
+          />
+        )}
       </div>
     </section>
   );
