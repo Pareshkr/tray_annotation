@@ -11,21 +11,14 @@ function MainComponent() {
     width: 0,
     height: 0,
   });
-  const [isDrawing, setIsDrawing] = useState(false);
+  const [drawing, setDrawing] = useState(false);
   const [imgOffset, setImgOffset] = useState({ x: 0, y: 0 });
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const [endPos, setEndPos] = useState({ x: 0, y: 0 });
-  let [refStartPos, setRefStartPos] = useState({});
-  const [refEndPos, setRefEndPos] = useState({ x: 0, y: 0 });
-  const [boxProp, setBoxProp] = useState({});
-  const [boxProps, setBoxProps] = useState([]);
-
-  const timer = useRef();
-  useEffect(() => {
-    return () => {
-      clearTimeout(timer.current);
-    };
-  }, []);
+  // let [refStartPos, setRefStartPos] = useState({});
+  // const [refEndPos, setRefEndPos] = useState({ x: 0, y: 0 });
+  // const [boxProp, setBoxProp] = useState({});
+  const [rectangles, setRectangles] = useState([]);
 
   //Find real, rendered dimensions & offset wrt VP of the image
   const findDimensions = (event) => {
@@ -47,7 +40,7 @@ function MainComponent() {
 
   const startDrawingRectangle = (event) => {
     event.preventDefault();
-    setIsDrawing(true);
+    setDrawing(true);
     const x = event.clientX;
     const y = event.clientY;
     // console.log("Start", x, y);
@@ -55,9 +48,9 @@ function MainComponent() {
     setEndPos({ x: x, y: y });
   };
 
-  const drawRectangle = (event) => {
+  const handleMouseMove = (event) => {
     event.preventDefault();
-    if (!isDrawing) {
+    if (!drawing) {
       return;
     }
 
@@ -66,7 +59,7 @@ function MainComponent() {
     // console.log("end", x, y);
     // console.log(event);
 
-    if (isDrawing) {
+    if (drawing) {
       setEndPos({ x, y });
     }
 
@@ -77,56 +70,56 @@ function MainComponent() {
     // }));
   };
 
-  useEffect(() => {
-    let minX = Math.min(startPos.x, endPos.x);
-    let minY = Math.min(startPos.y, endPos.y);
-    let refX = Math.abs(minX - imgOffset.x);
-    let refy = Math.abs(minY - imgOffset.y);
-    let refWidth = Math.abs(endPos.x - startPos.x);
-    let refHeight = Math.abs(endPos.y - startPos.y);
+  // useEffect(() => {
+  //   let minX = Math.min(startPos.x, endPos.x);
+  //   let minY = Math.min(startPos.y, endPos.y);
+  //   let refX = Math.abs(minX - imgOffset.x);
+  //   let refy = Math.abs(minY - imgOffset.y);
+  //   let refWidth = Math.abs(endPos.x - startPos.x);
+  //   let refHeight = Math.abs(endPos.y - startPos.y);
 
-    if (isDrawing) {
-      setRefStartPos({
-        left: refX,
-        top: refy,
-        width: refWidth,
-        height: refHeight,
-      });
-    }
-  }, [endPos]);
+  //   if (isDrawing) {
+  //     setRefStartPos({
+  //       left: refX,
+  //       top: refy,
+  //       width: refWidth,
+  //       height: refHeight,
+  //     });
+  //   }
+  // }, [endPos]);
 
-  console.log(refStartPos);
+  // console.log(refStartPos);
 
-  const stopDrawingRectangle = () => {
-    if (isDrawing) {
-      setIsDrawing(false);
+  const handleMouseUp = () => {
+    if (drawing) {
+      setDrawing(false);
       const rect = {
         left: Math.min(startPos.x, endPos.x),
         top: Math.min(startPos.y, endPos.y),
         width: Math.abs(endPos.x - startPos.x),
         height: Math.abs(endPos.y - startPos.y),
       };
-      setBoxProps((prevBoxProps) => [...prevBoxProps, rect]);
+      setRectangles((prevRectangles) => [...prevRectangles, rect]);
     }
   };
 
   // console.log("BOX OBJECT", boxProp);
-  console.log("BOX ARRAY", boxProps);
+  // console.log("BOX ARRAY", boxProps);
 
   return (
-    <section className="w-full h-screen flex justify-center bg-black border border-black">
-      <div ref={imgDivRef} className="relative self-center border border-black">
+    <section className="relative w-full h-screen flex justify-center bg-black border border-black">
+      <div ref={imgDivRef} className="relative self-center">
         <img
           onLoad={findDimensions}
           onMouseDown={startDrawingRectangle}
-          onMouseMove={drawRectangle}
-          onMouseUp={stopDrawingRectangle}
-          onMouseLeave={stopDrawingRectangle}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          // onMouseLeave={handleMouseUp}
           src={DemoImage}
           alt="demoImage"
           className="max-h-[97vh]"
         />
-        {boxProps.map((box, index) => (
+        {rectangles.map((box, index) => (
           <div
             key={index}
             className="absolute border-2 border-white"
@@ -142,7 +135,7 @@ function MainComponent() {
             </span>
           </div>
         ))}
-        {isDrawing && (
+        {/* {drawing && (
           <div
             className="absolute border-2 border-green-500"
             style={{
@@ -152,8 +145,19 @@ function MainComponent() {
               height: Math.abs(endPos.y - startPos.y),
             }}
           />
-        )}
+        )} */}
       </div>
+      {drawing && (
+        <div
+          className="absolute border-2 border-green-500"
+          style={{
+            left: Math.min(startPos.x, endPos.x),
+            top: Math.min(startPos.y, endPos.y),
+            width: Math.abs(endPos.x - startPos.x),
+            height: Math.abs(endPos.y - startPos.y),
+          }}
+        />
+      )}
     </section>
   );
 }
