@@ -15,6 +15,8 @@ function MainComponent() {
   const [imgOffset, setImgOffset] = useState({ x: 0, y: 0 });
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const [endPos, setEndPos] = useState({ x: 0, y: 0 });
+  let [refStartPos, setRefStartPos] = useState({});
+  const [refEndPos, setRefEndPos] = useState({ x: 0, y: 0 });
   const [boxProp, setBoxProp] = useState({});
   const [boxProps, setBoxProps] = useState([]);
 
@@ -48,7 +50,7 @@ function MainComponent() {
     setIsDrawing(true);
     const x = event.clientX;
     const y = event.clientY;
-    console.log("Start", x, y);
+    // console.log("Start", x, y);
     setStartPos({ x: x, y: y });
     setEndPos({ x: x, y: y });
   };
@@ -61,7 +63,8 @@ function MainComponent() {
 
     let x = event.clientX;
     let y = event.clientY;
-    console.log("end", x, y);
+    // console.log("end", x, y);
+    // console.log(event);
 
     if (isDrawing) {
       setEndPos({ x, y });
@@ -73,6 +76,27 @@ function MainComponent() {
     //   height: rectHeight,
     // }));
   };
+
+  useEffect(() => {
+    let minX = Math.min(startPos.x, endPos.x);
+    let minY = Math.min(startPos.y, endPos.y);
+    let refX = Math.abs(minX - imgOffset.x);
+    let refy = Math.abs(minY - imgOffset.y);
+    let refWidth = Math.abs(endPos.x - startPos.x);
+    let refHeight = Math.abs(endPos.y - startPos.y);
+
+    if (isDrawing) {
+      setRefStartPos({
+        left: refX,
+        top: refy,
+        width: refWidth,
+        height: refHeight,
+      });
+    }
+  }, [endPos]);
+
+  console.log(refStartPos);
+
   const stopDrawingRectangle = () => {
     if (isDrawing) {
       setIsDrawing(false);
@@ -113,7 +137,7 @@ function MainComponent() {
               height: box.height,
             }}
           >
-            <span className="relative text-white -top-7 left-1">
+            <span className="relative text-white -top-6 left-1">
               {index + 1}
             </span>
           </div>
