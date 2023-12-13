@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 // import DemoImage from "./assets/shelf_image.png";
-import DemoImage from "./assets/floor_layout.jpg";
+import DemoImage from "./assets/floor_layout.png";
+// import DemoImage from "./assets/floor_layout.jpg";
 
 function MainComponent() {
   const imageRef = useRef(null);
@@ -90,20 +91,24 @@ function MainComponent() {
     }
   };
 
-  // const handleUndo = () => {
-  //   if (rectangles.length > 0) {
-  //     const newRectangles = [...rectangles];
-  //     const newBoxProps = [...boxProps];
-  //     const newScaledBoxProps = [...scaledBoxProps];
-  //     newRectangles.pop(); // Remove the last object
-  //     newBoxProps.pop(); // Remove the last object
-  //     newScaledBoxProps.pop(); // Remove the last object
-  //     setRectangles(newRectangles);
-  //     setBoxProps(newBoxProps);
-  //     setScaledBoxProps(newScaledBoxProps);
-  //     setId(id - 1);
-  //   }
-  // };
+  const handleUndo = () => {
+    if (rectangles.length > 0) {
+      const newRectangles = [...rectangles];
+      const newBoxProps = [...boxProps];
+      const newScaledBoxProps = [...scaledBoxProps];
+      newRectangles.pop(); // Remove the last object
+      newBoxProps.pop(); // Remove the last object
+      newScaledBoxProps.pop(); // Remove the last object
+      setRectangles(newRectangles);
+      setBoxProps(newBoxProps);
+      setScaledBoxProps(newScaledBoxProps);
+      if (id > 0) {
+        setId(id - 1);
+      } else {
+        return;
+      }
+    }
+  };
 
   // const handleSendData = () => {
   //   console.log("Scaled", scaledBoxProps);
@@ -142,14 +147,23 @@ function MainComponent() {
   return (
     <>
       <section className="w-full h-screen relative flex justify-center bg-black">
-        <button
-          className="absolute top-3 right-5 text-white bg-emerald-500 w-16 h-8 rounded-sm z-50"
-          onClick={() => {
-            console.log("Scaled", scaledBoxProps);
-          }}
-        >
-          Print
-        </button>
+        <div className="absolute top-3 right-5 z-50 flex flex-col space-y-2">
+          <button
+            className="text-white bg-emerald-500 w-16 h-8 rounded-sm"
+            onClick={() => {
+              console.log("Scaled", scaledBoxProps);
+            }}
+          >
+            Print
+          </button>
+          <button
+            className="text-black bg-slate-200 w-16 h-8 rounded-sm"
+            onClick={handleUndo}
+          >
+            Undo
+          </button>
+        </div>
+
         <div
           // ref={imageRef}
           onMouseDown={handleMouseDown}
@@ -181,21 +195,21 @@ function MainComponent() {
               }}
             >
               <span className="relative text-white -top-6 left-1">
-                {index + 1}
+                Bay {index + 1}
               </span>
             </div>
           ))}
           {drawing && (
-          <div
-            className="absolute border-2 border-green-500"
-            style={{
-              left: Math.min(startPos.x, endPos.x),
-              top: Math.min(startPos.y, endPos.y),
-              width: Math.abs(endPos.x - startPos.x),
-              height: Math.abs(endPos.y - startPos.y),
-            }}
-          />
-        )}
+            <div
+              className="absolute border-2 border-green-500"
+              style={{
+                left: Math.min(startPos.x, endPos.x),
+                top: Math.min(startPos.y, endPos.y),
+                width: Math.abs(endPos.x - startPos.x),
+                height: Math.abs(endPos.y - startPos.y),
+              }}
+            />
+          )}
         </div>
       </section>
     </>
