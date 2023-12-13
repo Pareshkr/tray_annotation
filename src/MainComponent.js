@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import DemoImage from "./assets/shelf_image.png";
+// import DemoImage from "./assets/shelf_image.png";
+import DemoImage from "./assets/floor_layout.jpg";
 
 function MainComponent() {
-  const imgDivRef = useRef(null);
+  const imageRef = useRef(null);
   const [realDimension, setRealDimension] = useState({
     width: 0,
     height: 0,
   });
-  const [renderedDimensions, setRenderedDimensions] = useState({
+  const [plottedDimensions, setPlottedDimensions] = useState({
     width: 0,
     height: 0,
   });
@@ -15,35 +16,38 @@ function MainComponent() {
   const [imgOffset, setImgOffset] = useState({ x: 0, y: 0 });
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const [endPos, setEndPos] = useState({ x: 0, y: 0 });
-  // let [refStartPos, setRefStartPos] = useState({});
-  // const [refEndPos, setRefEndPos] = useState({ x: 0, y: 0 });
-  // const [boxProp, setBoxProp] = useState({});
+  const [id, setId] = useState(1);
   const [rectangles, setRectangles] = useState([]);
+  const [boxProps, setBoxProps] = useState([]);
+  const [scaledBoxProps, setScaledBoxProps] = useState([]);
 
   //Find real, rendered dimensions & offset wrt VP of the image
   const findDimensions = (event) => {
     const { naturalWidth, naturalHeight } = event.target;
-    const imgDiv = imgDivRef.current;
+    const imgDiv = imageRef.current;
     const { width, height, left, top } = imgDiv.getBoundingClientRect();
+    console.log("Plotted Width", imgDiv.getBoundingClientRect().width);
+    console.log("Plotted Height", imgDiv.getBoundingClientRect().height);
+    console.log("Real Width", naturalWidth);
+    console.log("Real Height", naturalHeight);
     setRealDimension({ width: naturalWidth, height: naturalHeight });
-    setRenderedDimensions({ width: width, height: height });
+    setPlottedDimensions({ width: width, height: height });
     setImgOffset({ x: left, y: top });
   };
 
   // useEffect(() => {
   //   if (realDimension.width !== 0) {
   //     console.log("Real", realDimension);
-  //     console.log("Rendered", renderedDimensions);
+  //     console.log("Rendered", plottedDimensions);
   //     console.log("Offset", imgOffset);
   //   }
-  // }, [realDimension, renderedDimensions]);
+  // }, [realDimension, plottedDimensions]);
 
-  const startDrawingRectangle = (event) => {
+  const handleMouseDown = (event) => {
     event.preventDefault();
     setDrawing(true);
     const x = event.clientX;
     const y = event.clientY;
-    // console.log("Start", x, y);
     setStartPos({ x: x, y: y });
     setEndPos({ x: x, y: y });
   };
@@ -56,86 +60,132 @@ function MainComponent() {
 
     let x = event.clientX;
     let y = event.clientY;
-    // console.log("end", x, y);
-    // console.log(event);
 
     if (drawing) {
       setEndPos({ x, y });
     }
-
-    // setBoxProp((prev) => ({
-    //   ...prev,
-    //   width: rectWidht,
-    //   height: rectHeight,
-    // }));
   };
-
-  // useEffect(() => {
-  //   let minX = Math.min(startPos.x, endPos.x);
-  //   let minY = Math.min(startPos.y, endPos.y);
-  //   let refX = Math.abs(minX - imgOffset.x);
-  //   let refy = Math.abs(minY - imgOffset.y);
-  //   let refWidth = Math.abs(endPos.x - startPos.x);
-  //   let refHeight = Math.abs(endPos.y - startPos.y);
-
-  //   if (isDrawing) {
-  //     setRefStartPos({
-  //       left: refX,
-  //       top: refy,
-  //       width: refWidth,
-  //       height: refHeight,
-  //     });
-  //   }
-  // }, [endPos]);
-
-  // console.log(refStartPos);
 
   const handleMouseUp = () => {
     if (drawing) {
       setDrawing(false);
+      setId(id + 1);
       const rect = {
         left: Math.min(startPos.x, endPos.x),
         top: Math.min(startPos.y, endPos.y),
         width: Math.abs(endPos.x - startPos.x),
         height: Math.abs(endPos.y - startPos.y),
       };
+      const box = {
+        id: id,
+        x1: Math.min(startPos.x, endPos.x),
+        x2: Math.max(startPos.x, endPos.x),
+        y1: Math.min(startPos.y, endPos.y),
+        y2: Math.max(startPos.y, endPos.y),
+        width: Math.abs(endPos.x - startPos.x),
+        height: Math.abs(endPos.y - startPos.y),
+      };
       setRectangles((prevRectangles) => [...prevRectangles, rect]);
+      setBoxProps((prevBoxProps) => [...prevBoxProps, box]);
     }
   };
 
-  // console.log("BOX OBJECT", boxProp);
-  // console.log("BOX ARRAY", boxProps);
+  // const handleUndo = () => {
+  //   if (rectangles.length > 0) {
+  //     const newRectangles = [...rectangles];
+  //     const newBoxProps = [...boxProps];
+  //     const newScaledBoxProps = [...scaledBoxProps];
+  //     newRectangles.pop(); // Remove the last object
+  //     newBoxProps.pop(); // Remove the last object
+  //     newScaledBoxProps.pop(); // Remove the last object
+  //     setRectangles(newRectangles);
+  //     setBoxProps(newBoxProps);
+  //     setScaledBoxProps(newScaledBoxProps);
+  //     setId(id - 1);
+  //   }
+  // };
+
+  // const handleSendData = () => {
+  //   console.log("Scaled", scaledBoxProps);
+  // };
+
+  useEffect(() => {
+    const scale_factor_x = realDimension.width / plottedDimensions.width;
+    const scale_factor_y = realDimension.height / plottedDimensions.height;
+
+    setScaledBoxProps(
+      boxProps.map((boxProp) => {
+        const { id, x1, x2, y1, y2 } = boxProp;
+        const x1_scaled = Math.floor((x1 - imgOffset.x) * scale_factor_x);
+        const x2_scaled = Math.ceil((x2 - imgOffset.x) * scale_factor_x);
+        const y1_scaled = Math.floor((y1 - imgOffset.y) * scale_factor_y);
+        const y2_scaled = Math.ceil((y2 - imgOffset.y) * scale_factor_y);
+        return {
+          id: id,
+          x: x1_scaled,
+          // x2: x2_scaled,
+          y: y1_scaled,
+          // y2: y2_scaled,
+          width: x2_scaled - x1_scaled,
+          height: y2_scaled - y1_scaled,
+        };
+      })
+    );
+    // eslint-disable-next-line
+  }, [rectangles]);
+
+  // console.log("Drawed", rectangles);
+  // console.log("Box", boxProps);
+  // console.log("Scaled", scaledBoxProps);
+  // console.log("Real", realDimension)
 
   return (
-    <section className="relative w-full h-screen flex justify-center bg-black border border-black">
-      <div ref={imgDivRef} className="relative self-center">
-        <img
-          onLoad={findDimensions}
-          onMouseDown={startDrawingRectangle}
+    <>
+      <section className="w-full h-screen relative flex justify-center bg-black">
+        <button
+          className="absolute top-3 right-5 text-white bg-emerald-500 w-16 h-8 rounded-sm z-50"
+          onClick={() => {
+            console.log("Scaled", scaledBoxProps);
+          }}
+        >
+          Print
+        </button>
+        <div
+          // ref={imageRef}
+          onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          // onMouseLeave={handleMouseUp}
-          src={DemoImage}
-          alt="demoImage"
-          className="max-h-[97vh]"
-        />
-        {rectangles.map((box, index) => (
-          <div
-            key={index}
-            className="absolute border-2 border-white"
-            style={{
-              left: box.left - imgOffset.x,
-              top: box.top - imgOffset.y,
-              width: box.width,
-              height: box.height,
-            }}
-          >
-            <span className="relative text-white -top-6 left-1">
-              {index + 1}
-            </span>
-          </div>
-        ))}
-        {/* {drawing && (
+          onMouseLeave={handleMouseUp}
+          className="self-center"
+        >
+          <img
+            ref={imageRef}
+            onLoad={findDimensions}
+            // onMouseDown={handleMouseDown}
+            // onMouseMove={handleMouseMove}
+            // onMouseUp={handleMouseUp}
+            // onMouseLeave={handleMouseUp}
+            src={DemoImage}
+            alt="demoImage"
+            className="max-h-[97vh]"
+          />
+          {rectangles.map((box, index) => (
+            <div
+              key={index}
+              className="absolute border-2 border-white"
+              style={{
+                left: box.left,
+                top: box.top,
+                width: box.width,
+                height: box.height,
+              }}
+            >
+              <span className="relative text-white -top-6 left-1">
+                {index + 1}
+              </span>
+            </div>
+          ))}
+          {drawing && (
           <div
             className="absolute border-2 border-green-500"
             style={{
@@ -145,20 +195,10 @@ function MainComponent() {
               height: Math.abs(endPos.y - startPos.y),
             }}
           />
-        )} */}
-      </div>
-      {drawing && (
-        <div
-          className="absolute border-2 border-green-500"
-          style={{
-            left: Math.min(startPos.x, endPos.x),
-            top: Math.min(startPos.y, endPos.y),
-            width: Math.abs(endPos.x - startPos.x),
-            height: Math.abs(endPos.y - startPos.y),
-          }}
-        />
-      )}
-    </section>
+        )}
+        </div>
+      </section>
+    </>
   );
 }
 
