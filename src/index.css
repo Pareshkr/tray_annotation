@@ -1,17 +1,56 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /* background: #84fd94; */
+
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Rubik:wght@300;400;500;600;700&display=swap");
+
+@layer utilities {
+  .scrollbar::-webkit-scrollbar {
+    width: 15px;
+    height: 10px;
+  }
+
+  .scrollbar::-webkit-scrollbar-track {
+    border-radius: 100vh;
+    background: #f7f4ed00;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+    /* background: #e0cbcb; */
+    background: #cbd5e1;
+    border-radius: 100vh;
+    border: 3px solid #f6f7ed;
+  }
+
+  /* .scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #10b981;
+  } */
+
+  .grad {
+    background-image: linear-gradient(-225deg, #3584a7 0%, #473b7b 100%);
+  }
+  /* .grad {
+    background-image: linear-gradient(to right, #243949 0%, #517fa4 100%);
+  } */
+
+  /* .grad {
+    background-image: linear-gradient(to right, #5d4157 0%, #91ada0 100%);
+  } */
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+body {
+  /* font-family: "Roboto", sans-serif; */
+  font-family: "Rubik", sans-serif;
 }
