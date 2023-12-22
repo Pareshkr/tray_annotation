@@ -16,6 +16,7 @@ import Select from "@mui/material/Select";
 import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
 import Tooltip from "@mui/material/Tooltip";
+import Box from "@mui/material/Box";
 
 // react-icons imports
 import { GrUndo } from "react-icons/gr";
@@ -28,6 +29,7 @@ import { FaSortNumericDown } from "react-icons/fa";
 import { MdOutlineCleaningServices } from "react-icons/md";
 import { BsDot } from "react-icons/bs";
 import { IoSettingsSharp } from "react-icons/io5";
+import { AiOutlineExclamationCircle } from "react-icons/ai";
 
 // project imports
 import DynamicButton from "../components/DynamicButton";
@@ -64,6 +66,7 @@ function OnboardPopup() {
   const [hoveredBoxId, setHoveredBoxId] = useState(null); // Stores the ID of the Hovered bay
   const [popoverData, setPopoverData] = useState({});
   const [isAscendingOrder, setIsAscendingOrder] = useState(null);
+  const [requiredSort, setRequiredSort] = useState(false);
   // const [popupId, setPopupId] = useState(null);
 
   //! UseRefs
@@ -113,14 +116,14 @@ function OnboardPopup() {
       // setRectangles(newRectangles);
       setBoxProps(newBoxProps);
       setScaledBoxProps(newScaledBoxProps);
-      setBayId(bayId - 1);
+      // setBayId(bayId - 1);
     }
   };
 
   // delete a plotted bay
   const handleDelete = (id) => {
     const updatedBoxProps = boxProps.filter((box) => box.id !== id);
-    setBayId(id - 1);
+    // setBayId(id - 1);
     setBoxProps(updatedBoxProps);
   };
 
@@ -176,11 +179,12 @@ function OnboardPopup() {
   const handleSort = () => {
     const sortedBoxProps = [...boxProps].sort((a, b) => a.id - b.id);
     setBoxProps(sortedBoxProps);
+    setRequiredSort(false);
   };
 
   const handleClear = () => {
     setBoxProps([]);
-    setBayId(0);
+    // setBayId(0);
   };
 
   const checkAscendingOrder = (array) => {
@@ -190,6 +194,38 @@ function OnboardPopup() {
       }
     }
     return true;
+  };
+
+  const checkAndSort = (data) => {
+    // Check if the array contains an object with id: 1 and it's not in the first index
+    const hasId1NotInFirstIndex =
+      data.some((item) => item.id === 1) && data[0].id !== 1;
+
+    if (hasId1NotInFirstIndex) {
+      // Sort the array based on the id property
+      // return [...data].sort((a, b) => a.id - b.id);
+      return true;
+    }
+
+    // Return the original array if the condition is not met
+    return false;
+  };
+
+  const findMissingId = (array) => {
+    if (array.length === 0 || array[0].id !== 1) {
+      return 1; // Return 1 if the array is empty or if the first id is not 1
+    }
+
+    const sortedIds = array.map((item) => item.id).sort((a, b) => a - b);
+
+    for (let i = 1; i < sortedIds.length; i++) {
+      if (sortedIds[i] - sortedIds[i - 1] !== 1) {
+        return sortedIds[i - 1] + 1;
+      }
+    }
+
+    // If no missing id found, return the next number after the last id
+    return sortedIds[sortedIds.length - 1] + 1;
   };
 
   //Find real, rendered dimensions & offset wrt VP of the image
@@ -251,10 +287,14 @@ function OnboardPopup() {
   };
 
   const handleMouseUp = () => {
+    // setMissingId(result);
     if (drawing) {
+      const result = findMissingId(boxProps);
+      // console.log("ID", result);
       setDrawing(false);
       const box = {
-        id: bayId + 1,
+        // id: bayId + 1,
+        id: result,
         x1: Math.min(startPos.x, endPos.x),
         x2: Math.max(startPos.x, endPos.x),
         y1: Math.min(startPos.y, endPos.y),
@@ -268,7 +308,7 @@ function OnboardPopup() {
         bottom: 0,
       };
       // setRectangles((prevRectangles) => [...prevRectangles, rect]);
-      setBayId(bayId + 1);
+      // setBayId(bayId + 1);
       setBoxProps((prevBoxProps) => [...prevBoxProps, box]);
       // }
     }
@@ -279,6 +319,11 @@ function OnboardPopup() {
   useEffect(() => {
     const ascendingResult = checkAscendingOrder(boxProps);
     setIsAscendingOrder(ascendingResult);
+    const sortRequired = checkAndSort(boxProps);
+    // setRequiredSort(sortRequired);
+    if (sortRequired) {
+      handleSort();
+    }
     const scale_factor_x = realDimension.width / plottedDimensions.width;
     const scale_factor_y = realDimension.height / plottedDimensions.height;
 
@@ -703,6 +748,37 @@ function OnboardPopup() {
                 </div>
               </Card>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={requiredSort}
+      >
+        <DialogContent className="">
+          <div className="w-full h-full flex flex-col space-y-4 m-auto">
+            <div className="m-auto text-5xl">
+              <AiOutlineExclamationCircle className="text-amber-500" />
+            </div>
+            <div id="poppinsFont" className="m-auto flex flex-col space-y-3">
+              <span className="text-xl text-wrap text-center self-center">
+                {" "}
+                Sorting the table is required <br /> before plotting bays further
+              </span>
+              <span className=" text-sm text-gray-600 self-center">
+                (Please click sort to continue)
+              </span>
+            </div>
+            <Box sx={{ "& button": { m: 1 } }}>
+              <div className="w-full flex justify-center">
+                <button
+                  id="poppinsFont"
+                  className="w-24 py-1 rounded-md shadow-md bg-amber-500 text-white"
+                  onClick={handleSort}
+                >
+                  Sort
+                </button>
+              </div>
+            </Box>
           </div>
         </DialogContent>
       </Dialog>
